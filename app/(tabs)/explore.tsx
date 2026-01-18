@@ -207,9 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#ffffff",
     letterSpacing: -1,
-    textShadowColor: "#6366f1",
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
+    textShadow: '0px 0px 20px #6366f1',
   },
   searchContainer: {
     flexDirection: "row",

@@ -2,7 +2,7 @@ import React from 'react';
 import { View, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Image } from 'expo-image';
 import Animated, { FadeIn, useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { AppColors, BorderRadius, Spacing, Shadows } from '@/constants/AppTheme';
+import { AppColors, BorderRadius, Spacing } from '@/constants/AppTheme';
 
 const { width } = Dimensions.get('window');
 const CARD_WIDTH = (width - Spacing.lg * 3) / 2;
@@ -60,7 +60,8 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.lg,
     overflow: 'hidden',
     marginBottom: Spacing.md,
-    ...Shadows.medium,
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 4,
   },
   image: {
     width: '100%',

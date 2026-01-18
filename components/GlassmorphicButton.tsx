@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { BlurView } from 'expo-blur';
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from 'react-native-reanimated';
-import { AppColors, BorderRadius, Spacing, Typography, Shadows } from '@/constants/AppTheme';
+import { AppColors, BorderRadius, Spacing, Typography } from '@/constants/AppTheme';
 
 interface GlassmorphicButtonProps {
   onPress: () => void;
@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     overflow: 'hidden',
-    ...Shadows.medium,
+    boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.1)',
+    elevation: 4,
   },
   icon: {
     fontSize: 20,
