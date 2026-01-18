@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "WallpaperApp",
-    "slug": "WallpaperApp",
+    "name": "WallCraft",
+    "slug": "wallcraft",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -9,15 +9,23 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sankalp.wallcraft"
     },
     "android": {
+      "package": "com.sankalp.wallcraft",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": [
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "READ_MEDIA_IMAGES"
+      ],
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
@@ -37,6 +45,14 @@
             "backgroundColor": "#000000"
           }
         }
+      ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": "Allow WallCraft to save wallpapers to your photos.",
+          "savePhotosPermission": "Allow WallCraft to save wallpapers to your photos.",
+          "isAccessMediaLocationEnabled": true
+        }
       ]
     ],
     "experiments": {
@@ -44,7 +60,10 @@
       "reactCompiler": true
     },
     "extra": {
-      "pexelsApiKey": "${PEXELS_API_KEY}"
+      "pexelsApiKey": "${PEXELS_API_KEY}",
+      "eas": {
+        "projectId": "b78ae87b-3788-4193-a99f-3ddc4dfa76ea"
+      }
     }
   }
 }

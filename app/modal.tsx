@@ -44,27 +44,55 @@ export default function ModalScreen() {
     try {
       setDownloading(true);
       
+      // Request permissions
       const { status } = await MediaLibrary.requestPermissionsAsync();
       if (status !== 'granted') {
-        Alert.alert('Permission Denied', 'We need permission to save images to your gallery.');
+        Alert.alert(
+          'Permission Denied', 
+          'WallCraft needs permission to save wallpapers to your gallery. Please enable it in Settings.'
+        );
         setDownloading(false);
         return;
       }
 
-      const timestamp = Date.now();
-      const fileUri = (FileSystem.documentDirectory || '') + `wallcraft_${timestamp}.jpg`;
+      // Use a better download URL - prefer original, fallback to large2x
+      const downloadUrl = wallpaper.src?.original || wallpaper.src?.large2x || wallpaper.src?.large;
       
-      const downloadResult = await FileSystem.downloadAsync(
-        wallpaper.src.original || wallpaper.src.large2x,
-        fileUri
-      );
+      if (!downloadUrl) {
+        Alert.alert('Error', 'Could not find a download URL for this wallpaper.');
+        setDownloading(false);
+        return;
+      }
 
-      await MediaLibrary.createAssetAsync(downloadResult.uri);
+      // Create file URI with timestamp
+      const timestamp = Date.now();
+      const filename = `wallcraft_${wallpaper.id}_${timestamp}.jpg`;
+      const fileUri = `${FileSystem.documentDirectory}${filename}`;
+      
+      console.log('Downloading from:', downloadUrl);
+      console.log('Saving to:', fileUri);
+      
+      // Download the file
+      const downloadResult = await FileSystem.downloadAsync(downloadUrl, fileUri);
+      
+      if (!downloadResult.uri) {
+        throw new Error('Download failed - no URI returned');
+      }
+      
+      console.log('Download complete:', downloadResult.uri);
+
+      // Save to media library
+      const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
+      console.log('Saved to gallery:', asset.uri);
       
       Alert.alert('Success! 🎉', 'Wallpaper saved to your gallery in HD quality!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Download error:', error);
-      Alert.alert('Download Failed', 'Could not download the wallpaper. Please try again.');
+      const errorMessage = error?.message || 'Unknown error occurred';
+      Alert.alert(
+        'Download Failed', 
+        `Could not download the wallpaper.\n\nError: ${errorMessage}\n\nPlease check your internet connection and try again.`
+      );
     } finally {
       setDownloading(false);
     }
