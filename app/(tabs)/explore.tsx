@@ -1,20 +1,19 @@
-import { View, Text, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, TextInput } from "react-native";
+import { View, Text, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, TextInput, Animated } from "react-native";
 import { Image } from 'expo-image';
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { searchWallpapers } from "../../api/pexels";
+import { useRouter } from "expo-router";
 
 const { width } = Dimensions.get("window");
 const COLUMN_WIDTH = (width - 24) / 2;
 
 const POPULAR_CATEGORIES = [
   { id: 1, name: "Nature", emoji: "🌿" },
-  { id: 2, name: "Space", emoji: "🌌" },
-  { id: 3, name: "Animals", emoji: "🦁" },
-  { id: 4, name: "Ocean", emoji: "🌊" },
-  { id: 5, name: "Mountains", emoji: "⛰️" },
-  { id: 6, name: "City", emoji: "🏙️" },
-  { id: 7, name: "Cars", emoji: "🚗" },
-  { id: 8, name: "Abstract", emoji: "🎨" },
+  { id: 2, name: "Cars", emoji: "🚗" },
+  { id: 3, name: "Anime", emoji: "🎭" },
+  { id: 4, name: "Space", emoji: "🌌" },
+  { id: 5, name: "Gaming", emoji: "🎮" },
+  { id: 6, name: "Minimal", emoji: "⚪" },
 ];
 
 export default function ExploreScreen() {
@@ -22,6 +21,24 @@ export default function ExploreScreen() {
   const [wallpapers, setWallpapers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(-20)).current;
+  const router = useRouter();
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   const handleSearch = async (query) => {
     if (!query.trim()) return;
@@ -59,7 +76,14 @@ export default function ExploreScreen() {
     return (
       <TouchableOpacity
         style={[styles.imageContainer, { width: COLUMN_WIDTH }]}
-        onPress={() => console.log("Image pressed:", item.id)}
+        onPress={() => router.push({
+          pathname: '/modal',
+          params: { 
+            imageUrl: item.src.large2x,
+            photographer: item.photographer,
+            downloadUrl: item.src.original
+          }
+        })}
       >
         <Image
           source={{ uri: item.src.medium }}
@@ -74,7 +98,15 @@ export default function ExploreScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>🔍 Explore & Search</Text>
+        <Animated.View style={{
+          opacity: fadeAnim,
+          transform: [{ translateY: slideAnim }]
+        }}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoIcon}>🎨</Text>
+            <Text style={styles.headerTitle}>WallCraft</Text>
+          </View>
+        </Animated.View>
         <View style={styles.searchContainer}>
           <TextInput
             style={styles.searchInput}
@@ -161,11 +193,23 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "#1f1f1f",
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#ffffff",
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
+  },
+  logoIcon: {
+    fontSize: 36,
+    marginRight: 10,
+  },
+  headerTitle: {
+    fontSize: 36,
+    fontWeight: "900",
+    color: "#ffffff",
+    letterSpacing: -1,
+    textShadowColor: "#6366f1",
+    textShadowOffset: { width: 0, height: 0 },
+    textShadowRadius: 20,
   },
   searchContainer: {
     flexDirection: "row",

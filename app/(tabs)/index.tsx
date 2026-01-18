@@ -1,11 +1,11 @@
-import { View, Text, FlatList, StyleSheet, Dimensions, TouchableOpacity, ActivityIndicator, RefreshControl } from "react-native";
-import { Image } from 'expo-image';
-import { useState, useEffect } from "react";
-import { getCuratedWallpapers } from "../../api/pexels";
-import { useRouter } from "expo-router";
-
-const { width } = Dimensions.get("window");
-const COLUMN_WIDTH = (width - 24) / 2; // 2 columns with padding
+import { View, Text, FlatList, StyleSheet, RefreshControl, useColorScheme } from 'react-native';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'expo-router';
+import { getCuratedWallpapers } from '../../api/pexels';
+import { WallpaperCard } from '@/components/WallpaperCard';
+import { SkeletonLoader } from '@/components/SkeletonLoader';
+import { AppColors, Spacing, Typography } from '@/constants/AppTheme';
+import { StatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
   const [wallpapers, setWallpapers] = useState([]);
@@ -13,21 +13,21 @@ export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);
   const router = useRouter();
+  const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
-  const loadWallpapers = async (pageNum = 1) => {
+  const loadWallpapers = async (pageNum = 1, isRefresh = false) => {
     try {
-      setLoading(true);
-      console.log("Loading wallpapers, page:", pageNum);
+      if (!isRefresh && pageNum === 1) setLoading(true);
       const data = await getCuratedWallpapers(pageNum);
-      console.log("Loaded", data?.length, "wallpapers");
+      
       if (pageNum === 1) {
         setWallpapers(data || []);
       } else {
         setWallpapers(prev => [...prev, ...(data || [])]);
       }
     } catch (error) {
-      console.error("Error loading wallpapers:", error);
-      setWallpapers([]);
+      console.error('Error loading wallpapers:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -41,7 +41,7 @@ export default function HomeScreen() {
   const onRefresh = () => {
     setRefreshing(true);
     setPage(1);
-    loadWallpapers(1);
+    loadWallpapers(1, true);
   };
 
   const loadMore = () => {
@@ -52,49 +52,55 @@ export default function HomeScreen() {
     }
   };
 
-  const renderItem = ({ item, index }) => {
-    const imageHeight = (item.height / item.width) * COLUMN_WIDTH;
-    
-    return (
-      <TouchableOpacity
-        style={[styles.imageContainer, { width: COLUMN_WIDTH }]}
-        onPress={() => {
-          // Navigate to details or full screen view
-          console.log("Image pressed:", item.id);
-        }}
-      >
-        <Image
-          source={{ uri: item.src.medium }}
-          style={[styles.image, { height: imageHeight }]}
-          contentFit="cover"
-          transition={200}
-        />
-        <View style={styles.photographerTag}>
-          <Text style={styles.photographerText} numberOfLines={1}>
-            📸 {item.photographer}
-          </Text>
-        </View>
-      </TouchableOpacity>
-    );
+  const handleCardPress = (item: any) => {
+    router.push({
+      pathname: '/modal',
+      params: {
+        wallpaper: JSON.stringify(item),
+      },
+    });
   };
+
+  const renderItem = ({ item, index }: any) => (
+    <WallpaperCard
+      item={item}
+      index={index}
+      onPress={() => handleCardPress(item)}
+    />
+  );
+
+  const renderHeader = () => (
+    <View style={styles.header}>
+      <Text style={[styles.title, isDark && styles.titleDark]}>WallCraft</Text>
+      <Text style={[styles.subtitle, isDark && styles.subtitleDark]}>
+        Trending & Popular
+      </Text>
+    </View>
+  );
+
+  const renderFooter = () => (
+    <View style={styles.footer}>
+      <Text style={[styles.footerText, isDark && styles.footerTextDark]}>
+        Developed by Sankalp with ❤️
+      </Text>
+    </View>
+  );
 
   if (loading && wallpapers.length === 0) {
     return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#6366f1" />
-        <Text style={styles.loadingText}>Loading beautiful wallpapers...</Text>
+      <View style={[styles.container, isDark && styles.containerDark]}>
+        <StatusBar style={isDark ? 'light' : 'dark'} />
+        {renderHeader()}
+        <SkeletonLoader />
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>✨ Discover Wallpapers</Text>
-        <Text style={styles.headerSubtitle}>Curated collection of stunning images</Text>
-      </View>
-      
+    <View style={[styles.container, isDark && styles.containerDark]}>
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <FlatList
+        ListHeaderComponent={renderHeader}
         data={wallpapers}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
@@ -105,19 +111,14 @@ export default function HomeScreen() {
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#6366f1" />
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={AppColors.primary}
+            colors={[AppColors.primary]}
+          />
         }
-        ListFooterComponent={
-          loading ? (
-            <View style={styles.footerLoader}>
-              <ActivityIndicator size="small" color="#6366f1" />
-            </View>
-          ) : (
-            <View style={styles.footer}>
-              <Text style={styles.footerText}>Developed by Sankalp with ❤️</Text>
-            </View>
-          )
-        }
+        ListFooterComponent={renderFooter}
       />
     </View>
   );
@@ -126,81 +127,46 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#0f0f0f",
+    backgroundColor: AppColors.background,
   },
-  centerContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#0f0f0f",
-  },
-  loadingText: {
-    marginTop: 12,
-    fontSize: 16,
-    color: "#9ca3af",
+  containerDark: {
+    backgroundColor: AppColors.backgroundDark,
   },
   header: {
     paddingTop: 60,
-    paddingBottom: 20,
-    paddingHorizontal: 16,
-    backgroundColor: "#0f0f0f",
-    borderBottomWidth: 1,
-    borderBottomColor: "#1f1f1f",
+    paddingBottom: Spacing.xl,
+    paddingHorizontal: Spacing.lg,
   },
-  headerTitle: {
-    fontSize: 32,
-    fontWeight: "bold",
-    color: "#ffffff",
-    marginBottom: 4,
+  title: {
+    ...Typography.h1,
+    color: AppColors.text,
+    marginBottom: Spacing.xs,
   },
-  headerSubtitle: {
-    fontSize: 14,
-    color: "#9ca3af",
+  titleDark: {
+    color: AppColors.textDark,
+  },
+  subtitle: {
+    ...Typography.caption,
+    color: AppColors.textSecondary,
+  },
+  subtitleDark: {
+    color: AppColors.textSecondaryDark,
   },
   listContainer: {
-    padding: 8,
+    paddingHorizontal: Spacing.lg,
   },
   row: {
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  imageContainer: {
-    borderRadius: 12,
-    overflow: "hidden",
-    backgroundColor: "#1f1f1f",
-    marginHorizontal: 4,
-    marginBottom: 8,
-  },
-  image: {
-    width: "100%",
-  },
-  photographerTag: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.6)",
-    paddingVertical: 6,
-    paddingHorizontal: 8,
-  },
-  photographerText: {
-    color: "#ffffff",
-    fontSize: 11,
-    fontWeight: "500",
-  },
-  footerLoader: {
-    paddingVertical: 20,
-    alignItems: "center",
+    justifyContent: 'space-between',
   },
   footer: {
-    paddingVertical: 24,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    marginTop: 8,
+    paddingVertical: Spacing.xxxl,
+    alignItems: 'center',
   },
   footerText: {
-    fontSize: 13,
-    color: "#6b7280",
-    fontWeight: "500",
+    ...Typography.small,
+    color: AppColors.textSecondary,
+  },
+  footerTextDark: {
+    color: AppColors.textSecondaryDark,
   },
 });
