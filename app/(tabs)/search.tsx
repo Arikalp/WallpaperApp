@@ -19,7 +19,7 @@ const CATEGORIES = [
 
 export default function SearchScreen() {
   const [searchQuery, setSearchQuery] = useState('');
-  const [wallpapers, setWallpapers] = useState([]);
+  const [wallpapers, setWallpapers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const router = useRouter();

@@ -8,7 +8,7 @@ import { AppColors, Spacing, Typography } from '@/constants/AppTheme';
 import { StatusBar } from 'expo-status-bar';
 
 export default function HomeScreen() {
-  const [wallpapers, setWallpapers] = useState([]);
+  const [wallpapers, setWallpapers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [page, setPage] = useState(1);

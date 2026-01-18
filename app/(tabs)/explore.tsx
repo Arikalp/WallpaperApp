@@ -40,14 +40,14 @@ export default function ExploreScreen() {
     ]).start();
   }, []);
 
-  const handleSearch = async (query) => {
+  const handleSearch = async (query: string) => {
     if (!query.trim()) return;
     
     try {
       setLoading(true);
       setSearched(true);
       const data = await searchWallpapers(query);
-      setWallpapers(data);
+      setWallpapers(data || []);
     } catch (error) {
       console.error("Error searching wallpapers:", error);
     } finally {
@@ -55,12 +55,12 @@ export default function ExploreScreen() {
     }
   };
 
-  const handleCategoryPress = (categoryName) => {
+  const handleCategoryPress = (categoryName: string) => {
     setSearchQuery(categoryName);
     handleSearch(categoryName);
   };
 
-  const renderCategoryItem = ({ item }) => (
+  const renderCategoryItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.categoryCard}
       onPress={() => handleCategoryPress(item.name)}
@@ -70,7 +70,7 @@ export default function ExploreScreen() {
     </TouchableOpacity>
   );
 
-  const renderWallpaperItem = ({ item }) => {
+  const renderWallpaperItem = ({ item }: any) => {
     const imageHeight = (item.height / item.width) * COLUMN_WIDTH;
     
     return (
@@ -207,7 +207,7 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#ffffff",
     letterSpacing: -1,
-    textShadow: '0px 0px 20px #6366f1',
+
   },
   searchContainer: {
     flexDirection: "row",

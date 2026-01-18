@@ -52,7 +52,7 @@ export default function ModalScreen() {
       }
 
       const timestamp = Date.now();
-      const fileUri = FileSystem.documentDirectory + `wallcraft_${timestamp}.jpg`;
+      const fileUri = (FileSystem.documentDirectory || '') + `wallcraft_${timestamp}.jpg`;
       
       const downloadResult = await FileSystem.downloadAsync(
         wallpaper.src.original || wallpaper.src.large2x,
