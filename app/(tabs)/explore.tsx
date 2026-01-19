@@ -79,9 +79,7 @@ export default function ExploreScreen() {
         onPress={() => router.push({
           pathname: '/modal',
           params: { 
-            imageUrl: item.src.large2x,
-            photographer: item.photographer,
-            downloadUrl: item.src.original
+            wallpaper: JSON.stringify(item)
           }
         })}
       >
