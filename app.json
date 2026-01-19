@@ -51,7 +51,8 @@
         {
           "photosPermission": "Allow WallCraft to save wallpapers to your photos.",
           "savePhotosPermission": "Allow WallCraft to save wallpapers to your photos.",
-          "isAccessMediaLocationEnabled": true
+          "isAccessMediaLocationEnabled": true,
+          "androidPermissions": ["READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
         }
       ]
     ],
