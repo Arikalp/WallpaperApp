@@ -17,9 +17,8 @@
       "package": "com.sankalp.wallcraft",
       "versionCode": 2,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
-        "foregroundImage": "./assets/images/android-icon-foreground.png",
-        "backgroundImage": "./assets/images/android-icon-background.png",
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#7c3aed",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
       "permissions": [
@@ -54,7 +53,11 @@
           "photosPermission": "Allow WallCraft to save wallpapers to your photos.",
           "savePhotosPermission": "Allow WallCraft to save wallpapers to your photos.",
           "isAccessMediaLocationEnabled": true,
-          "androidPermissions": ["READ_MEDIA_IMAGES", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
+          "androidPermissions": [
+            "READ_MEDIA_IMAGES",
+            "READ_EXTERNAL_STORAGE",
+            "WRITE_EXTERNAL_STORAGE"
+          ]
         }
       ]
     ],
