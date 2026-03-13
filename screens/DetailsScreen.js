@@ -11,21 +11,39 @@ export default function DetailsScreen({ route }) {
     try {
       setDownloading(true);
 
-      const { status } = await MediaLibrary.requestPermissionsAsync();
+      // Request media library write permission (writeOnly is correct for saving)
+      const { status } = await MediaLibrary.requestPermissionsAsync(true);
       if (status !== "granted") {
-        Alert.alert("Permission Needed", "Allow storage permission to download.");
+        Alert.alert(
+          "Permission Required",
+          "Please allow photo/media access so WallCraft can save wallpapers to your gallery."
+        );
         setDownloading(false);
         return;
       }
 
-      const fileUri = FileSystem.documentDirectory + `wallpaper_${Date.now()}.jpg`;
+      // Use cacheDirectory — reliably accessible by MediaLibrary on all Android versions
+      const fileUri =
+        FileSystem.cacheDirectory + `wallpaper_${Date.now()}.jpg`;
 
       const downloadedFile = await FileSystem.downloadAsync(image, fileUri);
+
+      if (downloadedFile.status !== 200) {
+        throw new Error(`Download failed with HTTP status ${downloadedFile.status}`);
+      }
+
       await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
+
+      // Clean up the temp cache file after saving
+      await FileSystem.deleteAsync(downloadedFile.uri, { idempotent: true });
 
       Alert.alert("Downloaded ✅", "Wallpaper saved to your gallery!");
     } catch (err) {
-      Alert.alert("Error ❌", "Download failed!");
+      console.error("[DetailsScreen] Download error:", err);
+      Alert.alert(
+        "Download Failed ❌",
+        "Could not save the wallpaper. Please check your internet connection and try again."
+      );
     } finally {
       setDownloading(false);
     }
