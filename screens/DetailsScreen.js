@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text, Alert } from "react-native";
 import { File, Directory, Paths } from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
+import * as Sharing from "expo-sharing";
 
 export default function DetailsScreen({ route }) {
   const { image } = route.params;
@@ -11,35 +12,48 @@ export default function DetailsScreen({ route }) {
     try {
       setDownloading(true);
 
-      // Request media library write permission (writeOnly is correct for saving)
-      const { status } = await MediaLibrary.requestPermissionsAsync(true);
-      if (status !== "granted") {
-        Alert.alert(
-          "Permission Required",
-          "Please allow photo/media access so WallCraft can save wallpapers to your gallery."
-        );
-        setDownloading(false);
-        return;
-      }
-
-      // Create a cache directory for wallpaper downloads
+      // Download the image to a cache directory using the new File API (SDK v54+)
       const cacheDir = new Directory(Paths.cache, "wallpapers");
       cacheDir.create();
-
-      // Download using the new File API (SDK v54+)
       const downloadedFile = await File.downloadFileAsync(image, cacheDir);
 
       if (!downloadedFile.exists) {
         throw new Error("Download failed — file does not exist after download.");
       }
 
-      // Save the downloaded file to the device gallery
-      await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
+      // Try saving directly to gallery via MediaLibrary (works in dev/production builds)
+      let savedToGallery = false;
+      try {
+        const { status } = await MediaLibrary.requestPermissionsAsync(true);
+        if (status === "granted") {
+          await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
+          savedToGallery = true;
+        }
+      } catch (mediaError) {
+        // MediaLibrary permission fails in Expo Go on Android 13+ — fall back to sharing
+        console.warn("[DetailsScreen] MediaLibrary unavailable, using share fallback:", mediaError.message);
+      }
 
-      // Clean up the temp cache file after saving
-      downloadedFile.delete();
-
-      Alert.alert("Downloaded ✅", "Wallpaper saved to your gallery!");
+      if (savedToGallery) {
+        downloadedFile.delete();
+        Alert.alert("Downloaded ✅", "Wallpaper saved to your gallery!");
+      } else {
+        // Fallback: open system share sheet so the user can save manually
+        const sharingAvailable = await Sharing.isAvailableAsync();
+        if (sharingAvailable) {
+          await Sharing.shareAsync(downloadedFile.uri, {
+            mimeType: "image/jpeg",
+            dialogTitle: "Save Wallpaper",
+          });
+          downloadedFile.delete();
+        } else {
+          downloadedFile.delete();
+          Alert.alert(
+            "Sharing Unavailable",
+            "Could not save or share the wallpaper on this device."
+          );
+        }
+      }
     } catch (err) {
       console.error("[DetailsScreen] Download error:", err);
       Alert.alert(
