@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { View, Image, TouchableOpacity, Text, Alert } from "react-native";
-import * as FileSystem from "expo-file-system";
+import { File, Directory, Paths } from "expo-file-system";
 import * as MediaLibrary from "expo-media-library";
 
 export default function DetailsScreen({ route }) {
@@ -22,20 +22,22 @@ export default function DetailsScreen({ route }) {
         return;
       }
 
-      // Use cacheDirectory — reliably accessible by MediaLibrary on all Android versions
-      const fileUri =
-        FileSystem.cacheDirectory + `wallpaper_${Date.now()}.jpg`;
+      // Create a cache directory for wallpaper downloads
+      const cacheDir = new Directory(Paths.cache, "wallpapers");
+      cacheDir.create();
 
-      const downloadedFile = await FileSystem.downloadAsync(image, fileUri);
+      // Download using the new File API (SDK v54+)
+      const downloadedFile = await File.downloadFileAsync(image, cacheDir);
 
-      if (downloadedFile.status !== 200) {
-        throw new Error(`Download failed with HTTP status ${downloadedFile.status}`);
+      if (!downloadedFile.exists) {
+        throw new Error("Download failed — file does not exist after download.");
       }
 
+      // Save the downloaded file to the device gallery
       await MediaLibrary.saveToLibraryAsync(downloadedFile.uri);
 
       // Clean up the temp cache file after saving
-      await FileSystem.deleteAsync(downloadedFile.uri, { idempotent: true });
+      downloadedFile.delete();
 
       Alert.alert("Downloaded ✅", "Wallpaper saved to your gallery!");
     } catch (err) {

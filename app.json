@@ -57,6 +57,8 @@
           "isAccessMediaLocationEnabled": true,
           "androidPermissions": [
             "READ_MEDIA_IMAGES",
+            "READ_MEDIA_VIDEO",
+            "READ_MEDIA_AUDIO",
             "READ_EXTERNAL_STORAGE",
             "WRITE_EXTERNAL_STORAGE"
           ]
@@ -72,12 +74,6 @@
       "eas": {
         "projectId": "b78ae87b-3788-4193-a99f-3ddc4dfa76ea"
       }
-    },
-    "runtimeVersion": {
-      "policy": "fingerprintVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/b78ae87b-3788-4193-a99f-3ddc4dfa76ea"
     }
   }
 }
